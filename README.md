@@ -60,6 +60,28 @@ There are some differences to note when using nested middleware:
 - The parent operation's params have been added to the params of nested middleware as a `scope` object. This is useful when the parent is relevant, for example when handling a `connectOrCreate` and you need to know the parent being connected to.
 - when handling a nested `create` action `params.args` does not include a `data` field, that must be handled manually. You can use the existence of `params.scope` to know when to handle a nested `create`.
 
+### Usage in projects with multiple different Prisma clients
+
+Call `init()` before any calls to `createNestedMiddleware()`, passing in the appropriate Prisma client:
+
+```javascript
+import { Prisma as SpecificPrismaClient } from "my-custom-prisma-generator-output-path";
+import { createNestedMiddleware, init } from 'prisma-nested-middleware'
+
+init(SpecificPrismaClient);
+// nested middleware will now work with the Prisma client at my-custom-prisma-generator-output-path
+// rather than the default import "@prisma/client":
+client.$use(createNestedMiddleware(async (params, next) => {
+  // update params here
+  const result = await next(params)
+  // update result here
+  return result;
+));
+
+```
+
+## How it works
+
 It is helpful to walk through the lifecycle of an operation:
 
 For the following update

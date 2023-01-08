@@ -1,20 +1,15 @@
 /* eslint-disable import/no-unresolved */
+
 // @ts-ignore unable to generate prisma client before building
-import { Prisma } from '@prisma/client';
+import type { Prisma } from "@prisma/client";
+// @ts-ignore ..
+// eslint-disable-next-line no-duplicate-imports
+import { Prisma as DefaultPrismaClient } from "@prisma/client";
 
 import get from 'lodash/get';
 import set from 'lodash/set';
 
-if (!Prisma.dmmf) {
-  throw new Error('Prisma DMMF not found, please generate Prisma client using `npx prisma generate`');
-}
-
 const relationsByModel: Record<string, Prisma.DMMF.Field[]> = {};
-Prisma.dmmf.datamodel.models.forEach((model: Prisma.DMMF.Model) => {
-  relationsByModel[model.name] = model.fields.filter(
-    (field) => field.kind === 'object' && field.relationName
-  );
-});
 
 export type NestedAction = Prisma.PrismaAction | 'connectOrCreate';
 
@@ -112,9 +107,29 @@ function extractNestedWriteInfo(
   }
 }
 
+export function init(prisma?: typeof Prisma) {
+  if (!prisma) {
+    prisma = DefaultPrismaClient;
+  }
+  if (!prisma.dmmf) {
+    throw new Error(
+      'Prisma DMMF not found, please generate Prisma client using `npx prisma generate`'
+    );
+  }
+  prisma.dmmf.datamodel.models.forEach((model: Prisma.DMMF.Model) => {
+    relationsByModel[model.name] = model.fields.filter(
+      (field) => field.kind === "object" && field.relationName
+    );
+  });
+}
+
 export function createNestedMiddleware<T>(
   middleware: NestedMiddleware
 ): Prisma.Middleware<T> {
+  if (!Object.keys(relationsByModel).length) {
+    init();
+  }
+
   const nestedMiddleware: NestedMiddleware = async (params, next) => {
     const relations = relationsByModel[params.model || ''] || [];
     const finalParams = params;
