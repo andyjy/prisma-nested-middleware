@@ -1,5 +1,5 @@
 import { DeferredPromise } from "@open-draft/deferred-promise";
-import { omit } from "lodash";
+import omit from "lodash/omit";
 
 import {
   MiddlewareCall,

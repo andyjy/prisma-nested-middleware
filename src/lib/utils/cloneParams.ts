@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
-import { cloneDeep, cloneDeepWith } from "lodash";
+import cloneDeep from "lodash/cloneDeep";
+import cloneDeepWith from "lodash/cloneDeepWith";
 
 import { NestedParams } from "../types";
 

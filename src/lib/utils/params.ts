@@ -2,7 +2,7 @@ import set from "lodash/set";
 import get from "lodash/get";
 import unset from "lodash/unset";
 import merge from "lodash/merge";
-import { omit } from "lodash";
+import omit from "lodash/omit";
 
 import {
   MiddlewareCall,
